@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers, network } from "hardhat";
 import { LegendaryCars, Marketplace } from "../typechain";
 
-xdescribe('Marketplace', function() {
+describe('Marketplace', function() {
     const metaCID = 'qwertyuiop';
     const minterRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('MINTER'));
     let erc20: any;
@@ -37,11 +37,14 @@ xdescribe('Marketplace', function() {
     });
 
     afterEach(async  function() {
-        console.log('afterEach');
-        
         await network.provider.request({
             method: "evm_revert",
             params: [clean],
+        });
+
+        clean = await network.provider.request({
+            method: "evm_snapshot",
+            params: []
         });
     });
 
@@ -69,11 +72,7 @@ xdescribe('Marketplace', function() {
     });
 
     it('Should buy listed nft item', async function() {
-        console.log(owner.address, marketplace.address);
-        console.log(await erc721.ownerOf(1));
-        
         await marketplace.createItem(owner.address, metaCID);
-        console.log(await erc721.ownerOf(1));
         
         await erc721.approve(marketplace.address, 1);
         await marketplace.listItem(1, 100);
@@ -131,7 +130,7 @@ xdescribe('Marketplace', function() {
         expect(auctionItem.bidsCount).equal(2);
     });
 
-    xit('Should withdraw nft and tokens on finish auction', async () => {
+    it('Should withdraw nft and tokens on finish auction', async () => {
         await marketplace.createItem(owner.address, metaCID);
         await erc721.approve(marketplace.address, 1);
         await marketplace.listItemOnAuction(1, 100);
@@ -151,7 +150,7 @@ xdescribe('Marketplace', function() {
         expect(await erc721.ownerOf(1)).equal(user2.address);
     });
 
-    it('Should revert auction on finish when less than 2 bids', async () => {
+    it('Should return assets when auction finished with less than 2 bids', async () => {
         await marketplace.createItem(owner.address, metaCID);
         await erc721.approve(marketplace.address, 1);
         await marketplace.listItemOnAuction(1, 100);
@@ -160,8 +159,12 @@ xdescribe('Marketplace', function() {
 
         await network.provider.send("evm_increaseTime", [3 * 24 * 3600]);
         await network.provider.send("evm_mine");
+        await marketplace.finishAuction(1);
 
-        await expect(marketplace.finishAuction(1)).be.revertedWith('Auction is in progress');
+        const auctionItem = await marketplace.auctionItems(1);
+        expect(auctionItem.seller).equal(ethers.constants.AddressZero);
+        expect(await erc20.balanceOf(user1.address)).equal(1000);
+        expect(await erc721.ownerOf(1)).equal(owner.address);
     });
 
     it('Should cancel ongoing auction', async () => {

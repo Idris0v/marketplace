@@ -5,7 +5,7 @@ import { ethers, network } from "hardhat";
 import { LegendaryCars, Marketplace } from "../typechain";
 
 
-describe('Marketplace', () => {
+xdescribe('Marketplace', () => {
     const metaCID = 'qwertyuiop';
     let erc20: any;
     let erc721: LegendaryCars;

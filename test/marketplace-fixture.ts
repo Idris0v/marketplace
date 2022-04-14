@@ -6,7 +6,7 @@ import { Marketplace } from "../typechain";
 
 import MarketplaceMock from '../artifacts/contracts/Marketplace.sol/Marketplace.json';
 import ERC721Mock from '../artifacts/contracts/LegendaryCars.sol/LegendaryCars.json';
-import ERC20Mock from '../mocks/ERC20Mock.json';
+import ERC20Mock from '../artifacts/contracts/Air.sol/Air.json';
 import { ethers, network } from "hardhat";
 
 xdescribe('Marketplace', () => {
